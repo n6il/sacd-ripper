@@ -53,6 +53,8 @@
  * The length of one Logical Block of an SACD.
  */
 #define SACD_LSN_SIZE                  2048
+#define SACD_PSN_SIZE                  2064
+extern uint32_t sacd_sector_size;
 #define SACD_SAMPLING_FREQUENCY        2822400
 #define SACD_FRAME_RATE                75
 

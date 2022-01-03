@@ -337,6 +337,13 @@ static int scarletbook_read_master_toc(scarletbook_handle_t *handle)
         return 0;
 
     master_toc = handle->master_toc = (master_toc_t *) handle->master_data;
+    if (strncmp("SACDMTOC", master_toc->id, 8) != 0)
+    {
+        fprintf(stderr, "libsacdread: Try use 2064 SACD sector size!\n");
+        sacd_sector_size = SACD_PSN_SIZE;
+        if (!sacd_read_block_raw(handle->sacd, START_OF_MASTER_TOC, MASTER_TOC_LEN, handle->master_data))
+            return 0;
+    }
 
     if (strncmp("SACDMTOC", master_toc->id, 8) != 0)
     {

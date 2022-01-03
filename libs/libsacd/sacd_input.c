@@ -240,16 +240,34 @@ static uint32_t sacd_dev_input_read(sacd_input_t dev,  uint32_t pos,  uint32_t b
     size_t len;
     ssize_t ret;
 
-    ret_lseek = lseek(dev->fd, (off_t)pos * (off_t)SACD_LSN_SIZE, SEEK_SET);
-    if (ret_lseek < 0)  // -1 on error
-    {
-		LOG(lm_main, LOG_ERROR, ("Error in sacd_dev_input_read: lseek(..pos..); pos=%ld\n",pos));
-        return 0;
-    }
+    switch(sacd_sector_size) {
+        case SACD_LSN_SIZE:
+        {
+            ret_lseek = lseek(dev->fd, (off_t)pos * (off_t)SACD_LSN_SIZE, SEEK_SET);
+            if (ret_lseek < 0)  // -1 on error
+            {
+              LOG(lm_main, LOG_ERROR, ("Error in sacd_dev_input_read: lseek(..pos..); pos=%ld\n",pos));
+                return 0;
+            }
 
-    len = (size_t) blocks * SACD_LSN_SIZE;
+            len = (size_t) blocks * SACD_LSN_SIZE;
 
-    ret = read(dev->fd, buffer, len);
+            ret = read(dev->fd, buffer, len);
+            break;
+        }
+        case SACD_PSN_SIZE:
+        {
+            for (uint32_t i = 0; i < blocks; i++)
+            {
+                ret = lseek(dev->fd, (off_t)(pos + i) * (off_t)SACD_PSN_SIZE + 12, SEEK_SET);
+                if (ret < 0) return 0;
+
+                ret = read(dev->fd, (uint8_t*)buffer + i * SACD_LSN_SIZE, SACD_LSN_SIZE);
+                if (ret != SACD_LSN_SIZE) return 0;
+            }
+            break;
+        }
+     }
 
     if (ret <= 0) // -1 on error ; 0 =indicates EOF
     {

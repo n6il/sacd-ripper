@@ -20,6 +20,7 @@
  */
 
 #include "scarletbook.h"
+uint32_t sacd_sector_size = SACD_LSN_SIZE;
 
 const char *character_set[] =
 {
